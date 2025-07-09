@@ -1,0 +1,13 @@
+{
+  "type": "oracle",
+  "host": "ninox-challenge-db.c61yu0g6iuj0.us-east-1.rds.amazonaws.com",
+  "port": 1521,
+  "username": "admin",
+  "password": "dP.UWpQEMxa9WP>h_!_wGH[8Rq1Z",
+  "serviceName": "DATABASE",
+  "entities": ["src/**/*.entity{.ts,.js}"],
+  "migrations": ["src/migrations/*.ts"],
+  "cli": {
+    "migrationsDir": "src/migrations"
+  }
+}

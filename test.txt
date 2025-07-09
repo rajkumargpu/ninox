@@ -1,0 +1,40 @@
+
+Module & Schema Setup
+In projects/api, generate a tasks module, controller, and service.
+Define your TypeORM (or Prisma) models for tasks and task_logs, and write the initial migration.
+RabbitMQ Configuration
+Stand up a local (or AWS MQ) RabbitMQ instance.
+In each service’s config, define the exchanges and queues:
+task.created, status.updated, deadline.passed (fanout or topic exchange)
+notification.email (direct queue with DLX + backoff)
+API Endpoints
+Implement POST /tasks:
+Persist a new task in “Pending”, record a log entry, emit task.created.
+Implement PATCH /tasks/:id/status:
+Validate transitions, update status + log, emit status.updated.
+Implement the three metrics endpoints (/tasks/:id/metrics, /tasks/metrics, /tasks/metrics/aggregate) with SQL queries or repository methods.
+Coordinator Service
+Subscribe to the three domain-event queues.
+For each event type, map to the correct notification.email payload (and, later, SMS/Slack).
+Instrument Prometheus counters/histograms around event handling and retries.
+Email Worker
+Listen on notification.email, call AWS SES (or SMTP), add retry/backoff logic via RabbitMQ DLX.
+On permanent failure, emit alert.operations for your Ops channel.
+Scheduler Worker
+Implement a simple cron (via RabbitMQ-delayed messages or AWS EventBridge) that every 5 minutes:
+Queries OracleDB for overdue “Pending”/“InProgress” tasks.
+Emits deadline.passed for each.
+Observability
+Wire Pino in all services to your chosen log backend (CloudWatch, ELK, Datadog, etc.).
+Expose a /metrics endpoint in API & Coordinator; configure Prometheus to scrape it.
+Stand up Grafana (or use CloudWatch dashboards) to visualize:
+Task creation rate, status-transition counts
+Email send latency & retry rates
+Deadline-breach alerts
+Local Testing & E2E
+Write unit tests for controllers and services.
+Use a framework like Testcontainers to spin up RabbitMQ and OracleDB in CI.
+Create an E2E script: “create task → simulate candidate actions → verify emails, logs, metrics.”
+Docker & Deployment
+Dockerize each NestJS service with a shared base image.
+Define an ECS/EKS deployment (or use Docker Compose

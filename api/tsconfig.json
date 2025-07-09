@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    // … your existing settings …
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "esModuleInterop": true,          // often needed alongside resolveJsonModule
+    "allowSyntheticDefaultImports": true,
+     "experimentalDecorators": true,
+  "emitDecoratorMetadata": true,
+  "useDefineForClassFields": false,
+  }
+}
