@@ -1,0 +1,17 @@
+{
+    "compilerOptions": {
+    "module": "commonjs",
+    "target": "ES2020",
+    "strict": true,
+    "rootDir": "src",
+    "outDir": "dist",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "baseUrl": ".",
+    "paths": {
+    "@api/rmq": ["../../api/src/rmq/rmq.module.ts"]
+    }
+    },
+    "include": ["src/**/*"],
+    "exclude": ["dist"]
+}

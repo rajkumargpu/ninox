@@ -1,29 +1,37 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ClientsModule, Transport } from '@nestjs/microservices';
-import { TasksService } from './tasks.service';
+
+import { RmqModule } from '../rmq/rmq.module';
+import { PrometheusModule } from '@willsoto/nestjs-prometheus';
+
 import { TasksController } from './tasks.controller';
-import { Task } from './tasks.entity';
+import { TasksService }    from './tasks.service';
+import { Task }            from './tasks.entity';
+import { TaskLog }         from './task-log.entity';
 
 @Module({
   imports: [
-    // Register Task entity repository
-    TypeOrmModule.forFeature([Task]),
-    // Register RabbitMQ client for task events
-    ClientsModule.register([
-      {
-        name: 'TASK_EVENTS',
-        transport: Transport.RMQ,
-        options: {
-          urls: [process.env.RABBITMQ_URL || 'amqp://guest:guest@localhost:15672'],
-          queue: 'task_events_queue',
-          queueOptions: { durable: true },
-        },
-      },
-    ]),
+    // 1) TypeORM repositories
+    TypeOrmModule.forFeature([Task, TaskLog]),
+
+    // 2) RMQ client for domain events
+    RmqModule.register({
+      name: 'TASK_EVENTS',
+      queue: 'task.events',
+      exchange: 'task.events',
+      exchangeType: 'topic',
+      routingKey: '#',
+      queueOptions: { durable: true },
+    }),
+
+    // 3) Prometheus for @InjectMetric(...)
+    PrometheusModule.register({
+      path: '/metrics',
+      defaultMetrics: { enabled: true },
+    }),
   ],
   controllers: [TasksController],
-  providers: [TasksService],
-  exports: [TasksService],
+  providers:    [TasksService],
+  exports:      [TasksService],
 })
 export class TasksModule {}
